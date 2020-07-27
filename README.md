@@ -13,5 +13,3 @@
 - `Main Keyword`: Entrepreneurial Orientation, Social Capital, Startup Performance, Startups in the Philippines
 - `Analysis Method`: PLS-SEM(`P`artial `L`east `S`quares `S`tructural `E`quation `M`odeling)
 - `Analysis Tools`: R, SmartPLS
-
-
