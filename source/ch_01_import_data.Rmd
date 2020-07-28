@@ -1,0 +1,177 @@
+---
+title: "Data Import & Label Encoding in R"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+- 설문조사가 끝났으면 이제 정리를 해야 한다. 
+- 일련의 과정은 보통 코딩이라 부른다. 
+
+### (1) 주요 패키지
+- 이번 포스트부터 [gt](https://gt.rstudio.com/) 패키지를 사용하려고 한다. 
+  + gt: [ggplot2](https://ggplot2.tidyverse.org/)와 같이 `Table`를 문법으로 컨트롤 할 수 있도록 구현된 패키지이다. 
+  + kableExtra: `HTML`로 출력할 수 있도록 도와주는 패키지이다. 
+
+## 문제점
+- `SmartPLS` 프로그램을 쓴다 하더라도 기본적으로 모든 데이터의 `entry`는 수치형으로 일단 바뀌어 있어야 한다.
+- 우선 데이터를 불러와서 확인해보자. 
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gt)
+library(kableExtra)
+
+
+# 데이터 불러오기
+data <- read_csv("data/thesis_mater.csv")
+
+data %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
+- 위 데이터에서 보면 알 수 있듯이, `WE1 ~ Business_Area` 까지의 데이터는 모두 문자로 되어 있다. 
+- `Python`에서는 [LabelEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html)라는 것이 있다. 
+- `R`에서는 기본 문법인 `factor`만 있어도 가능하다. 
+  
+## Factor의 활용
+- 이제 본격적으로 코딩을 시작한다. 
+- 데이터 전처리에서 쉬운 방법은 없다. 
+
+### (1) 기본
+- 가상의 데이터를 만든 후 `factor`를 활용하자. 
+
+```{r}
+temp <- data.frame(x = c(1, 1, 2), 
+                   gender = c("Female", "Male", "Male"))
+temp
+```
+
+- 이제 `gender`를 변환하자. 
+```{r}
+temp$gender <- as.numeric(factor(temp$gender))
+temp
+```
+
+- `factor`로 변환한 뒤, `as.numeric`으로 형 변환을 하면 쉽게 바꿀수는 있다. 
+- 위와 같이 형변환을 하면 `1`이 무엇을 의미하는지, `2`는 무엇을 의미하는지 알 수 없게 된다. (즉, 정보의 손실이 올 수 있다.)
+
+### (2) 응용
+- 이제 `factor`를 조금 더 활용해 본다. 
+- 같은 가상의 데이터를 사용한다. 
+
+```{r}
+temp <- data.frame(x = c(1, 1, 2), 
+                   gender = c("Female", "Male", "Male"))
+
+temp$gender <- as.numeric(factor(temp$gender), 
+                          levels = c("Female", "Male"), 
+                          labels = c(1, 2))
+
+temp
+```
+
+- 결과는 똑같다. 그러나, 각 `label`에 대한 해석이 보다 명확해지기 때문에 추후 분석결과보고서를 작성할 때 보다 쉽게 작성할 수 있다. 
+
+### (3) 적용
+- 이제 내 데이터에 적용해보자. 
+- 적용해야 할 변수는 모두 Firm_Age ~ Business_Area 까지이다. 
+- 여기에서 하나의 `Rule`을 만들어야 한다. 
+  + 각 범주마다 하나씩 맞추는 노가다는 지양해야 한다.
+  + 따라서, 범주의 값은 모두 알파벳순으로 정렬한다. 
+  + 이를 프로그래밍으로 해결한다. 
+  
+```{r}
+temp <- data.frame(x = c(1, 1, 2), 
+                   gender = c("Female", "Male", "Male"),
+                   grade = c("A", "B", "C"))
+
+temp
+```
+
+- 데이터가 하나 더 생겼다. 다음과 같은 함수를 만든다.
+```{r}
+factor2numeric <- function(x) {
+  # input 변수가 문자형인지 확인하여 다음 코드를 실행한다. 
+  # 만약 문자가 아니면 `else` 코드로 넘어간다. 
+  if(is.character(x) == TRUE) { 
+      # levels 함수를 사용하면 알파벳으로 자동 정렬해준다.
+      char_levels <- levels(factor(x)) 
+      
+      # 변환되기 전 factor의 `level`를 확인한다.
+      print("----변환 시작 전----")
+      print(char_levels)   
+      
+      # factor형으로 변환했다. 
+      x <- factor(x, 
+                  levels = char_levels, 
+                  labels = c(1:length(char_levels))) # 이 코드는 labels 숫자로 정의한다. 
+     
+       # 변환되기 전 factor의 `level`를 확인한다.
+      print(levels(x)) 
+      print("----변환 종료----")
+  } else {
+    # 에러 메시지를 출력한다
+    print("This is not character!!")
+  } 
+  return(x)
+}
+
+# 전체 데이터에서 character인 데이터를 사용자 정의 함수를 적용하였다. 
+data2 <- data %>% 
+  mutate_if(is.character, factor2numeric)
+```
+### (4) 중복치와 결측치 확인
+- 모든 것을 온라인으로 받다보니, 중복치와 결측치가 발생할 수 있다. 
+- 따라서 해당 내용이 있는지 확인한다. 
+
+```{r}
+sum(duplicated(data2))
+```
+- 중복치가 5개 인것으로 확인이 된다. 
+- 중복치를 제거하는 것은 간단하다. 
+```{r}
+data3 <- data2 %>% distinct()
+```
+
+- 이번에는 결측치를 확인한다. 
+```{r}
+colSums(is.na(data3))
+```
+- 각 `column`마다 결측치를 확인한 결과 모두 0인 것을 확인할 수 있다. 
+
+
+### (5) 결과 확인
+- 이제 변환된 결과를 확인한다. 
+```{r}
+# 결과값을 확인한다. 
+data3 %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
+## 파일 내보내기
+- 이제 `SmartPLS`에서 사용할 수 있도록 `csv` 파일 형태로 내보낸다. 
+```{r}
+write_csv(data3, "~/Desktop/thesis_master2.csv")
+```
+
+
+## 소결론
+- 데이터 전처리는 중요하다. 그러나, 시간이 조금 걸린다.
+- 설문조사에서 특히 문제가 되는 부분은 문자열 데이터를 수치형 데이터로 변환해주는 문제가 있다. 
+  + 이를 프로그래밍으로 해결하면 보다 쉽게 접근할 수 있다. 
+- 이제 본격적으로 분석을 해보자. 
