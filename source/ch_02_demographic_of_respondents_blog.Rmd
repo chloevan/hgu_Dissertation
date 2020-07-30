@@ -1,0 +1,94 @@
+---
+title: "ch 12 - Demographic of Respondent in R"
+date: 2020-07-30T16:00:00+09:00
+output: 
+  html_document: 
+    keep_md: true
+    toc: true
+tags:
+  - "논문통계"
+  - "구조방정식"
+  - "PLS SEM"
+  - "측정척도"
+  - "gtsummary"
+categories:
+  - "Data Analysis"
+  - "R"
+  - "논문통계"
+  - "구조방정식"
+  - "PLS SEM"
+menu: 
+  r:
+    name: ch 12 - Demographic of Respondent in R
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+- 지난 시간에 설문조사 전처리에 대해 배웠다면 이번에는 경영/사회과학 논문에서 필수적으로 기재해야 하는 `표본의 특성`을 간단한 프로그램으로 요약하는 것을 코딩한다. 
+
+### (1) 주요 패키지
+- 이번 포스트부터 [gt](https://gt.rstudio.com/) 패키지를 사용하려고 한다. 
+  + gt: [ggplot2](https://ggplot2.tidyverse.org/)와 같이 `Table`를 문법으로 컨트롤 할 수 있도록 구현된 패키지이다. 
+  + kableExtra: `HTML`로 출력할 수 있도록 도와주는 패키지이다. 
+
+```{r, warning=FALSE, message=FALSE}
+library(readr)
+library(dplyr)
+library(gt)
+library(gtsummary)
+```
+
+## I. 데이터 가져오기 
+- 우선 데이터를 불러온다. 
+```{r, message=FALSE, warning=FALSE}
+data <- read_csv('data/thesis_mater.csv') %>% 
+  distinct() %>% # 중복데이터 제거
+  rename(Position = founder_employee, # 출력을 위한 변수명 정리
+         Age = age_of_respondent, 
+         Education = Education_Level)
+glimpse(data %>% select(Firm_Age:Business_Area))
+```
+- 전체 34개의 변수 중에서, `문자열` 관련 데이터만 추출하였다. 
+- 어떤 데이터를 표본의 특성으로 삼아야 할까?
+  + 위 10개의 데이터에는 통제변수[^1]가 들어가 있다. 
+  + 통제변수는 표본의 특징이 아니기 때문에 통제변인을 제외한 나머지 변수들을 추출한다. 
+- 표본의 특성을 기술하는 데이터는 아래와 같이 추출한다. 
+  + gender, founder_employee, age_of_respondent, educational_level, business_area
+  
+```{r}
+data2 <- data %>% 
+  select(gender, Position, Age, Education, Business_Area)
+
+glimpse(data2)
+```
+
+## II. 표본 특성 표 출력
+- 보통 논문에 들어가는 표본의 특징은 Category, Frequency, and Percentage(%) 정도만 필요하다. 
+- 이 때, `Table`을 가공해줄 수 있는 `gtsummary` 패키지를 활용한다. 
+
+```{r, warning=FALSE, message=FALSE}
+set_gtsummary_theme(theme_gtsummary_journal(journal = "jama"))
+
+data2 %>% 
+  tbl_summary(by = gender) %>% 
+  add_overall() %>% 
+  add_n() %>% 
+  modify_header(label = "**Variable**") %>% # update the column header
+  bold_labels()
+```
+
+
+- 위 데이터를 기준으로 본 설문조사에서는 `Business Area`를 재 범주화 할 필요가 있다. 
+- 또한 `Others`에 대한 정의를 어떻게 내려야 할지에 대한 기준도 세워야 할 필요성이 있다. 
+
+
+## 소결론
+- 논문 작성 시, 표본의 특성을 산출할 때 대개는 피벗테이블을 활용해야 한다. 
+  + 논리적으로는 그렇지만, 이를 논문에 적합한 표로 구성하기에는 조금 많은 수고로움이 따른다. 
+- `gtsummary` 패키지를 활용하여 표본의 특성 테이블을 매우 빠르게 작성할 수 있어서 좋았다. 
+  + `gt`패키지의 확장 패키지라 보면 좋을 것 같다. 
+
+[^1]: 두 변수간의 관계를 정확히 파악하기 위해 두 변수 사이의 관계에 영향을 미칠 수 있는 제3의 변수를 연구과정에서 통제하는 경우이다.
