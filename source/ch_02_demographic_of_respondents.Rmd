@@ -34,7 +34,9 @@ data <- read_csv('data/thesis_mater.csv') %>%
   distinct() %>% # 중복데이터 제거
   rename(Position = founder_employee, # 출력을 위한 변수명 정리
          Age = age_of_respondent, 
-         Education = Education_Level)
+         Education = Education_Level) %>% 
+  slice(-c(1:10))
+
 glimpse(data %>% select(Firm_Age:Business_Area))
 ```
 - 전체 34개의 변수 중에서, `문자열` 관련 데이터만 추출하였다. 
@@ -46,7 +48,7 @@ glimpse(data %>% select(Firm_Age:Business_Area))
   
 ```{r}
 data2 <- data %>% 
-  select(gender, Position, Age, Education, Business_Area)
+  select(gender, Position, Age, Education, Business_Area) %>% as_tibble()
 
 glimpse(data2)
 ```
@@ -58,12 +60,16 @@ glimpse(data2)
 ```{r, warning=FALSE, message=FALSE}
 set_gtsummary_theme(theme_gtsummary_journal(journal = "jama"))
 
+# 옵션
+options(gtsummary.tbl_summary.percent_fun = function(x) sprintf(round(x * 100, 2), fmt='%#.1f'))
+
 data2 %>% 
-  tbl_summary(by = gender) %>% 
-  add_overall() %>% 
-  add_n() %>% 
+  tbl_summary(by = "gender", digits = list("Position" ~ c(1, 2))) %>% add_n() %>% 
   modify_header(label = "**Variable**") %>% # update the column header
-  bold_labels()
+  bold_labels() %>% 
+  italicize_levels() -> temp_image
+
+gt::gtsave(as_gt(temp_image), file = "~/Desktop/tmp.png")
 ```
 
 - 위 데이터를 기준으로 본 설문조사에서는 Business Area를 재 범주화 할 필요가 있다. 

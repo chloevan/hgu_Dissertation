@@ -60,7 +60,7 @@ glimpse(data %>% select(Firm_Age:Business_Area))
   
 ```{r}
 data2 <- data %>% 
-  select(gender, Position, Age, Education, Business_Area)
+  select(gender, Position, Age, Education, Business_Area) %>% sliece(-10)
 
 glimpse(data2)
 ```
