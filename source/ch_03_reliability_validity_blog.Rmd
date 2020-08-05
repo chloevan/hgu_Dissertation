@@ -1,5 +1,5 @@
 ---
-title: "ch 13 - Reliability and Validity"
+title: "ch 13 - Reliability"
 date: 2020-08-04T22:00:00+09:00
 output: 
   html_document: 
@@ -50,6 +50,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ## II. 설문조사 데이터 분석 
 - 이제 설문지를 분석해본다. 
 - 필수 패키지를 확인한다.
+
 ```{r}
 library(readr) 
 library(dplyr)
@@ -57,6 +58,7 @@ library(kableExtra)
 library(psy) # 신뢰도
 library(corrplot) # 상관계수
 library(psychometric) # 타당도 
+library(likert) # 문항 시각화 
 ```
 
 
@@ -70,7 +72,7 @@ data <- read_csv('data/thesis_mater.csv') %>%
          Age = age_of_respondent, 
          Education = Education_Level) %>% 
   slice(-c(1:10)) %>% 
-  select(-c(Firm_Age:Business_Area))
+  dplyr::select(-c(Firm_Age:Business_Area))
 
 data %>% 
   head() %>% 
@@ -78,11 +80,14 @@ data %>%
   kable_styling("striped") %>% 
   scroll_box(width = "100%")
 ```
+
 ### (2) 상관관계 확인
 - 각 척도(Item)에서의 상관관계를 확인해본다. 
 ```{r}
-m <- cor(data)
-corrplot(m, method="number", type="upper")
+M <- cor(data)
+
+corrplot(M, type="upper", order="hclust", 
+         col=RColorBrewer::brewer.pal(n=8, name="RdBu"))
 ```
 
 - 전체적으로 상관관계가 양의 상관관계를 나타나고 있는 것으로 확인된다. 
@@ -96,10 +101,27 @@ corrplot(m, method="number", type="upper")
 ```{r}
 cronbach(data)
 ```
-- 0.97로 매우 높은 신뢰도를 보여주고 있음을 확인할 수 있다. 
+- 그러나 위 데이터는 전체 데이터셋에 대한 것을 나타나는 것이다.
 
+조금 더 구체적으로 확인해보자.
+```{r}
+result <- psych::alpha(data)
+print(result$total)
+```
+- 위 값을 보면, 처음 구했던 값과 동일하게 `0.970241`과 동일한 것을 확인할 수 있다. 
+  + 해석: 문항들의 내적일관성에 기초하여 추정되는 신뢰도 지수의 하나이다. `0.97`이라는 점수는 신뢰도가 매우 높다는 것을 의미한다. 
+
+### (4) 문항표 시각화
+- 문항표에 대한 시각화를 진행해본다. 
+
+```{r}
+mylevels <- c("Strongly Agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly Disagree")
+
+data2 <- lapply(data, factor, labels = mylevels) %>% as.data.frame()
+
+p <- likert(data2) 
+plot(p)
+```
 
 ## III. Reference
 신건권. (2018). 석박사학위 및 학술논문 작성 중심의 SmartPLS 3.0 구조방정식모델링. 서울: 청람.
-
-

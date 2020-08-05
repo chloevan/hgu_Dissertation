@@ -1,5 +1,5 @@
 ---
-title: "Reliability and Validity"
+title: "Reliability"
 output:
   html_document:
     toc: true
@@ -43,6 +43,7 @@ library(kableExtra)
 library(psy) # 신뢰도
 library(corrplot) # 상관계수
 library(psychometric) # 타당도 
+library(likert) # 문항 시각화 
 ```
 
 
@@ -83,7 +84,27 @@ corrplot(m, method="number", type="upper")
 cronbach(data)
 ```
 - 0.97로 매우 높은 신뢰도를 보여주고 있음을 확인할 수 있다. 
+- 그러나 위 데이터는 전체 데이터셋에 대한 것을 나타나는 것이다.
 
+조금 더 구체적으로 확인해보자.
+```{r}
+result <- psych::alpha(data)
+print(result$total)
+```
+- 위 값을 보면, 처음 구했던 값과 동일하게 `0.970241`과 동일한 것을 확인할 수 있다. 
+  + 해석: 문항들의 내적일관성에 기초하여 추정되는 신뢰도 지수의 하나이다. `0.97`이라는 점수는 신뢰도가 매우 높다는 것을 의미한다. 
+
+### (4) 문항표 시각화
+- 문항표에 대한 시각화를 진행해본다. 
+
+```{r}
+mylevels <- c("Strongly Agree", "Agree", "Neither agree nor disagree", "Disagree", "Strongly Disagree")
+
+data2 <- lapply(data, factor, labels = mylevels) %>% as.data.frame()
+
+p <- likert(data2) 
+plot(p)
+```
 
 ## III. Reference
 신건권. (2018). 석박사학위 및 학술논문 작성 중심의 SmartPLS 3.0 구조방정식모델링. 서울: 청람.
