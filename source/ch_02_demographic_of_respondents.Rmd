@@ -30,7 +30,7 @@ library(gtsummary)
 ## I. 데이터 가져오기 
 - 우선 데이터를 불러온다. 
 ```{r, message=FALSE, warning=FALSE}
-data <- read_csv('data/thesis_mater.csv') %>% 
+data <- read_csv('data/thesis_master2.csv') %>% 
   distinct() %>% # 중복데이터 제거
   rename(Position = founder_employee, # 출력을 위한 변수명 정리
          Age = age_of_respondent, 

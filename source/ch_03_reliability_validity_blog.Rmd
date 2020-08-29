@@ -66,13 +66,14 @@ library(likert) # 문항 시각화
 - 먼저 수집된 설문조사 데이터를 확인한다. 
 
 ```{r}
-data <- read_csv('data/thesis_mater.csv') %>% 
+data <- read_csv('data/thesis_master2.csv') %>% 
   distinct() %>% # 중복데이터 제거
   rename(Position = founder_employee, # 출력을 위한 변수명 정리
          Age = age_of_respondent, 
          Education = Education_Level) %>% 
-  slice(-c(1:10)) %>% 
-  dplyr::select(-c(Firm_Age:Business_Area))
+  slice(-c(1:10))
+
+# write_csv(x = data, "~/Desktop/thesis_master.csv")
 
 data %>% 
   head() %>% 

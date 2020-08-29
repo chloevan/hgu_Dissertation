@@ -1,0 +1,67 @@
+---
+title: "CFA in R"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Intro
+- 지난시간에는 데이터의 신뢰도에 다루었다면, 이번에는 본격적인 `plspm` 패키지를 활용한 모델링에 들어가도록 한다. 
+- R에서 제공하는 여러 구조방정식 패키지 중, `plspm` 패키지를 활용하여 구조 방정식을 활용하였다. 
+
+## I. why `plspm?` 
+- 구조방정식과 관련된 소프트웨어는 크게 3개로 확인된다.  
+  + SmartPLS: 상용 소프트웨어이며, 필자가 `학위 논문`을 위해 사용하는 패키지이다. 
+  + XLSTAT-PLSPM: 엑셀에서 활용할 수 있는 패키지 툴이다. 
+  + plspm, lavaan, sempls,SEMinR 등이 있다. 
+- `plspm` 패키지와 `SmartPLS` 패키지의 비교 논문에서 두 패키지의 결과값이 동일한 것으로 확인되었다. 
+
+## II. 데이터 분석
+- 이제 `plspm` 패키지를 설치하고 모형을 만든 후, 분석을 수행해보도록 한다. 
+
+### (1) 데이터 불러오기
+- 패키지 설치 후, 데이터를 불러오자. 
+```{r}
+library(readr) 
+library(dplyr)
+library(kableExtra)
+```
+
+- 이제 데이터를 불러온다. 
+```{r}
+data <- read_csv('data/thesis_mater.csv') %>% 
+  distinct() %>% # 중복데이터 제거
+  rename(Position = founder_employee, # 출력을 위한 변수명 정리
+         Age = age_of_respondent, 
+         Education = Education_Level) %>% 
+  slice(-c(1:10))
+
+data %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
+### (2) 주요 함수
+- `sempls()`: Sempls는 PLS(Patial Limitial Square) 방법에 의해 구조 방정식 모델을 적합시킨다. 추정치는 원시 데이터를 기반으로 하며 분포 가정을 요구하지 않는다.
+
+```{r}
+
+```
+
+
+## III. Reference
+신건권. (2018). 석박사학위 및 학술논문 작성 중심의 SmartPLS 3.0 구조방정식모델링. 서울: 청람.
+
+Monecke, A. & Leisch, F. (2012). semPLS: structural equation modeling using partial least squares. Journal of Statistical Software, 48 (3), 1-32.
+
+Kim, Y., & Lee, S. (2015). Utilization of R Program for the Partial Least Square Model: Comparison of SmartPLS and R. Journal of Digital Convergence, 13, 117-124.
+
