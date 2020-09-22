@@ -29,25 +29,35 @@ library(psych)
 data3 <- data %>% select(EI_1:NF3)
 describe(data3)
 
-## Likert Visualisation
+## Likert Visualisation with Entrepreneurial Orientation
 library(likert)
-data2 <- data.frame(sapply(data[, 1:24], function(x) {
+library(gridExtra)
+
+data2 <- data.frame(lapply(data[, 1:24], function(x) {
   factor(x, levels = c(1:5), labels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
-}) %>% as.data.frame(), data[, 25:34]) %>% 
-  mutate_if(is.character, as.factor)
+}) %>% as.data.frame(), data[, 25:34])
+data2$Firm_Age <- factor(data2$Firm_Age, levels = c("Less than 2 years", "3-4 years", "5 years above"))
+data2$Firm_Size <- factor(data2$Firm_Size, levels = c("Less than 5 members", 
+                                                      "5-9 members", 
+                                                      "10-14 members", 
+                                                      "Above 15 members"))
+data2$WE2 <- as.factor(data2$WE2)
+data2$WE3 <- as.factor(data2$WE3)
 
 
+EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
+plot(EO_likert_firmAge, ordered = TRUE)
 
-data2[, 1:24] <- sapply(data2[, 1:24], factor, levels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
+EO_likert_firmSize <- likert(items = data2[,1:9], grouping=data2[,26])
+plot(EO_likert_firmSize, ordered = TRUE)
+
+EO_likert_WE2 <- likert(items = data2[,1:9], grouping=data2[,28])
+plot(EO_likert_WE2, ordered = TRUE)
+
+EO_likert_WE3 <- likert(items = data2[,1:9], grouping=data2[,28])
+plot(EO_likert_WE3, ordered = TRUE)
 
 
-data2$EI_1 <- factor(data2$EI_1, levels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
-
-firm_age <- likert(items = data2[,1:3], grouping=data2[,25])
-plot(firm_age, ordered = TRUE)
-
-
-##  
 data4 <- data3 %>% 
   mutate(IN = (EI_1 + EI_2 + EI_3)/3, 
          PR = (EP_1 + EP_2 + EP_3)/3, 
