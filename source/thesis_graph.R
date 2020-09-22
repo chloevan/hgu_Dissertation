@@ -30,17 +30,21 @@ data3 <- data %>% select(EI_1:NF3)
 describe(data3)
 
 ## Likert Visualisation
+library(likert)
 data2 <- data.frame(sapply(data[, 1:24], function(x) {
-  factor(x, levels = c(1:5), labels = c("Strong Agree", "Agree", "Neutral", "Disagree", "Strongly Agree"))
+  factor(x, levels = c(1:5), labels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
 }) %>% as.data.frame(), data[, 25:34]) %>% 
   mutate_if(is.character, as.factor)
 
-glimpse(data2)
-
-firm_age <- likert(items = data2[,1:9], grouping=data2[,25])
-plot(firm_age)
 
 
+data2[, 1:24] <- sapply(data2[, 1:24], factor, levels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
+
+
+data2$EI_1 <- factor(data2$EI_1, levels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
+
+firm_age <- likert(items = data2[,1:3], grouping=data2[,25])
+plot(firm_age, ordered = TRUE)
 
 
 ##  
