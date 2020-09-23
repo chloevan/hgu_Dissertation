@@ -2,7 +2,10 @@
 ## 패키지 불러오기
 library(tidyverse)
 library(gtsummary)
+library(psych)
 library(dplyr)
+library(likert)
+library(gridExtra)
 
 ## Data Import
 data <- read_csv('source/data/thesis_mater.csv') %>%
@@ -25,13 +28,12 @@ table(data2$WE3)
 
 ## 3. Description Statistics
 # 출처: https://rfriend.tistory.com/124
-library(psych)
+
 data3 <- data %>% select(EI_1:NF3)
 describe(data3)
 
 ## Likert Visualisation with Entrepreneurial Orientation
-library(likert)
-library(gridExtra)
+
 
 data2 <- data.frame(lapply(data[, 1:24], function(x) {
   factor(x, levels = c(1:5), labels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
@@ -44,7 +46,7 @@ data2$Firm_Size <- factor(data2$Firm_Size, levels = c("Less than 5 members",
 data2$WE2 <- as.factor(data2$WE2)
 data2$WE3 <- as.factor(data2$WE3)
 
-
+#### EO ####
 EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
 plot(EO_likert_firmAge, ordered = TRUE)
 
@@ -56,6 +58,20 @@ plot(EO_likert_WE2, ordered = TRUE)
 
 EO_likert_WE3 <- likert(items = data2[,1:9], grouping=data2[,28])
 plot(EO_likert_WE3, ordered = TRUE)
+
+
+#### SC
+SC_likert_firmAge <- likert(items = data2[,10:18], grouping=data2[,25])
+plot(SC_likert_firmAge, ordered = TRUE)
+
+SC_likert_firmSize <- likert(items = data2[,10:18], grouping=data2[,26])
+plot(SC_likert_firmSize, ordered = TRUE)
+
+SC_likert_WE2 <- likert(items = data2[,10:18], grouping=data2[,28])
+plot(SC_likert_WE2, ordered = TRUE)
+
+SC_likert_WE3 <- likert(items = data2[,10:18], grouping=data2[,28])
+plot(SC_likert_WE3, ordered = TRUE)
 
 
 data4 <- data3 %>% 
@@ -84,6 +100,10 @@ data %>%
   mutate(Firm_Size = as.factor(Firm_Size)) %>% 
   gather(key = "Factors", value = "Score", -Firm_Size) %>% 
   mutate(factors = factor(Factors, levels = c("IN", "PR", "RT"))) %>% 
-  ggplot(aes(x = Firm_Size, y = Score, fill = factors)) + 
+  ggplot(aes(x = Firm_Size, y = Score, fill = factors, label = round(Score, 2))) + 
     geom_col(position = position_dodge()) + 
-  theme_bw()
+    geom_text(position = position_dodge(width = 0.9), vjust = -0.5, size = 7) + 
+  theme_bw() + 
+  theme(title = element_text(size = 24), 
+        axis.text = element_text(size = 20), legend.text = element_text(size = 20))
+
