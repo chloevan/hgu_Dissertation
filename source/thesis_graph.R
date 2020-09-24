@@ -1,5 +1,4 @@
-## Thesis Graph
-## 패키지 불러오기
+#### 1단계 패키지 불러오기 #### 
 library(tidyverse)
 library(gtsummary)
 library(psych)
@@ -7,7 +6,7 @@ library(dplyr)
 library(likert)
 library(gridExtra)
 
-## Data Import
+#### 2단계 Data Import ####
 data <- read_csv('source/data/thesis_mater.csv') %>%
   distinct() %>% # 중복데이터 제거
   rename(Position = founder_employee, # 출력을 위한 변수명 정리
@@ -16,25 +15,23 @@ data <- read_csv('source/data/thesis_mater.csv') %>%
   slice(-c(1:10))
 
 
-## 1. Data Check
+#### 3단계 데이터 확인 #### 
 glimpse(data)
 
-## 2. Demographic of Respondents
+#### 4단계 통계 지표 산출 #### 
 data2 <- data %>% select(Firm_Age:Business_Area)
 tbl_summary(data2)
 
 table(data2$WE2)
 table(data2$WE3)
 
-## 3. Description Statistics
+#### (1) Description Statistics ####
 # 출처: https://rfriend.tistory.com/124
 
 data3 <- data %>% select(EI_1:NF3)
 describe(data3)
 
-## Likert Visualisation with Entrepreneurial Orientation
-
-
+#### (2) Likert Visualisation with Entrepreneurial Orientation #### 
 data2 <- data.frame(lapply(data[, 1:24], function(x) {
   factor(x, levels = c(1:5), labels = c("Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"))
 }) %>% as.data.frame(), data[, 25:34])
@@ -46,7 +43,7 @@ data2$Firm_Size <- factor(data2$Firm_Size, levels = c("Less than 5 members",
 data2$WE2 <- as.factor(data2$WE2)
 data2$WE3 <- as.factor(data2$WE3)
 
-#### EO ####
+#### (~가) EO ####
 EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
 plot(EO_likert_firmAge, ordered = TRUE)
 
@@ -60,7 +57,7 @@ EO_likert_WE3 <- likert(items = data2[,1:9], grouping=data2[,28])
 plot(EO_likert_WE3, ordered = TRUE)
 
 
-#### SC
+#### (~나) SC ####
 SC_likert_firmAge <- likert(items = data2[,10:18], grouping=data2[,25])
 plot(SC_likert_firmAge, ordered = TRUE)
 
@@ -73,6 +70,18 @@ plot(SC_likert_WE2, ordered = TRUE)
 SC_likert_WE3 <- likert(items = data2[,10:18], grouping=data2[,28])
 plot(SC_likert_WE3, ordered = TRUE)
 
+#### (~다) Startup Performance ####
+SP_likert_firmAge <- likert(items = data2[,19:24], grouping=data2[,25])
+plot(SP_likert_firmAge, ordered = TRUE)
+
+SP_likert_firmSize <- likert(items = data2[,19:24], grouping=data2[,26])
+plot(SP_likert_firmSize, ordered = TRUE)
+
+SP_likert_WE2 <- likert(items = data2[,19:24], grouping=data2[,28])
+plot(SP_likert_WE2, ordered = TRUE)
+
+SP_likert_WE3 <- likert(items = data2[,19:24], grouping=data2[,28])
+plot(SP_likert_WE3, ordered = TRUE)
 
 data4 <- data3 %>% 
   mutate(IN = (EI_1 + EI_2 + EI_3)/3, 
@@ -87,7 +96,7 @@ data4 <- data3 %>%
   describe()
 data4
 
-## 4. Visualization
+#### 5단계 Visualization ####
 data %>% 
   mutate(IN = (EI_1 + EI_2 + EI_3)/3, 
          PR = (EP_1 + EP_2 + EP_3)/3, 
