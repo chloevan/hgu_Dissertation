@@ -42,6 +42,10 @@ data2$Firm_Size <- factor(data2$Firm_Size, levels = c("Less than 5 members",
                                                       "Above 15 members"))
 data2$WE2 <- as.factor(data2$WE2)
 data2$WE3 <- as.factor(data2$WE3)
+levels(data2$WE2) <- c("No, Experience", "Yes, Experience")
+levels(data2$WE3) <- c("No, Experience", "Yes, Experience")
+
+tbl_summary(data2)
 
 #### (~가) EO ####
 EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
@@ -68,6 +72,7 @@ SC_likert_WE2 <- likert(items = data2[,10:18], grouping=data2[,28])
 plot(SC_likert_WE2, ordered = TRUE)
 
 SC_likert_WE3 <- likert(items = data2[,10:18], grouping=data2[,28])
+
 plot(SC_likert_WE3, ordered = TRUE)
 
 #### (~다) Startup Performance ####

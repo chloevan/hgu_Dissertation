@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b82d0fb4-854e-4355-bb20-b871d1ce0107" name="Default Changelist" comment="" />
+    <list default="true" id="b82d0fb4-854e-4355-bb20-b871d1ce0107" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/source/thesis_graph.R" beforeDir="false" afterPath="$PROJECT_DIR$/source/thesis_graph.R" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
