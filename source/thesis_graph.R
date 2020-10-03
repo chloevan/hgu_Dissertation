@@ -47,6 +47,10 @@ levels(data2$WE3) <- c("No, Experience", "Yes, Experience")
 
 tbl_summary(data2)
 
+plot(likert(items = data2[, 1:18]), ordered = FALSE) + 
+  theme(axis.text = element_text(size = 16)) + 
+  ggtitle("Independent Variables (Strongly Agree ~ Strongly DisAgree")
+
 #### (~가) EO ####
 EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
 plot(EO_likert_firmAge, ordered = TRUE)
