@@ -5,6 +5,8 @@ library(psych)
 library(dplyr)
 library(likert)
 library(gridExtra)
+library(rlang)
+library(forcats)
 
 #### 2단계 Data Import ####
 data <- read_csv('source/data/thesis_mater.csv') %>%
@@ -19,9 +21,13 @@ data <- read_csv('source/data/thesis_mater.csv') %>%
 glimpse(data)
 
 #### 4단계 통계 지표 산출 #### 
-data2 <- data %>% select(Firm_Age:Business_Area)
-tbl_summary(data2)
+data2 <- data %>% 
+  select(Firm_Age:Business_Area) %>% 
+  mutate_if(is.character, as.factor)
 
+17 + 5+ 9
+
+table(data$WE1)
 table(data2$WE2)
 table(data2$WE3)
 
@@ -47,9 +53,15 @@ levels(data2$WE3) <- c("No, Experience", "Yes, Experience")
 
 tbl_summary(data2)
 
+#### Independent Variables ####
 plot(likert(items = data2[, 1:18]), ordered = FALSE) + 
   theme(axis.text = element_text(size = 16)) + 
-  ggtitle("Independent Variables (Strongly Agree ~ Strongly DisAgree")
+  ggtitle("Independent Variables (Strongly Agree ~ Strongly DisAgree)")
+
+#### Dependent Variables ####
+plot(likert(items = data2[, 19:24]), ordered = FALSE) + 
+  theme(axis.text = element_text(size = 16)) + 
+  ggtitle("Dependent Variables (Strongly Agree ~ Strongly DisAgree)")
 
 #### (~가) EO ####
 EO_likert_firmAge <- likert(items = data2[,1:9], grouping=data2[,25])
@@ -92,6 +104,8 @@ plot(SP_likert_WE2, ordered = TRUE)
 SP_likert_WE3 <- likert(items = data2[,19:24], grouping=data2[,28])
 plot(SP_likert_WE3, ordered = TRUE)
 
+
+#### Descriptive Analysis ####
 data4 <- data3 %>% 
   mutate(IN = (EI_1 + EI_2 + EI_3)/3, 
          PR = (EP_1 + EP_2 + EP_3)/3, 
@@ -105,23 +119,122 @@ data4 <- data3 %>%
   describe()
 data4
 
-#### 5단계 Visualization ####
-data %>% 
+#### 5단계 Visualization - EO ####
+data5 <- data %>% 
   mutate(IN = (EI_1 + EI_2 + EI_3)/3, 
          PR = (EP_1 + EP_2 + EP_3)/3, 
-         RT = (EP_1 + EP_2 + EP_3)/3) %>% 
-  dplyr::select(Firm_Age:RT) %>% 
-  group_by(Firm_Size) %>% 
-  summarise(IN = mean(IN), 
-            PR = mean(PR), 
-            RT = mean(RT)) %>% 
-  mutate(Firm_Size = as.factor(Firm_Size)) %>% 
-  gather(key = "Factors", value = "Score", -Firm_Size) %>% 
-  mutate(factors = factor(Factors, levels = c("IN", "PR", "RT"))) %>% 
-  ggplot(aes(x = Firm_Size, y = Score, fill = factors, label = round(Score, 2))) + 
-    geom_col(position = position_dodge()) + 
-    geom_text(position = position_dodge(width = 0.9), vjust = -0.5, size = 7) + 
-  theme_bw() + 
-  theme(title = element_text(size = 24), 
-        axis.text = element_text(size = 20), legend.text = element_text(size = 20))
+         RT = (EP_1 + EP_2 + EP_3)/3, 
+         SD = (SS_1 + SS_2 + SS_3)/3, 
+         SC = (SC_1 + SC_2 + SC_3)/3, 
+         SR = (SR_1 + SR_2 + SR_3)/3, 
+         FP = (F1 + F2 + F3)/3, 
+         NFP = (NF1 + NF2 + NF3)/3) %>% 
+  dplyr::select(-c(1:24), -Business_Area) %>% 
+  mutate_if(is.character, as.factor) %>% 
+  mutate(WE1 = fct_collapse(WE1, 
+                            "Yes"=c("As founder or employee,  I have startup experience, one time", 
+                                    "As founder or employee, I have startup experiences more than 3 times", 
+                                    "As founder or employee, I have startup experiences, two times"),
+                            "No"="No, I don't have experience"))
+  
+  
+
+myTheme <- theme(title = element_text(size = 16), 
+                 axis.title.x = element_blank(), 
+                 axis.text = element_text(size = 14), 
+                 legend.text = element_text(size = 14),
+                 legend.key = element_rect(size = 6, fill = "white", colour = "white"), 
+                 legend.key.size = unit(1, "cm"),
+                 legend.title = element_blank(), 
+                 legend.spacing = unit(1.0, 'cm'), 
+                 legend.position = "top")
+
+
+bar_plot_fn <- function(.data, group_col, title) {
+
+  .data %>% 
+    dplyr::group_by({{ group_col }}) %>% 
+    dplyr::summarise(Innovativeness = mean(IN), 
+                     Proactiveness = mean(PR), 
+                     Risk_Taking = mean(RT)) %>% 
+    tidyr::gather(key = "Factors", value = "Score", -{{ group_col }}) %>% 
+    mutate(Factors = factor(Factors, levels = c("Innovativeness", "Proactiveness", "Risk_Taking"))) %>% 
+    ggplot(aes(x = {{ group_col }}, y = Score, fill = Factors, label = round(Score, 2))) + 
+    geom_col(position = position_dodge2(padding = 0.1)) + 
+    geom_text(position = position_dodge(width = 0.9), vjust = -0.5, size = 6) + 
+    ylim(0, 5) + 
+    theme_classic() + 
+    ggtitle(paste0("Entrepreneurial Orientation by ", title)) + 
+    theme(title = element_text(size = 16), 
+          axis.title.x = element_blank(), 
+          axis.text = element_text(size = 12), 
+          legend.text = element_text(size = 14),
+          legend.key = element_rect(size = 6, fill = "white", colour = "white"), 
+          legend.key.size = unit(1, "cm"),
+          legend.title = element_blank(), 
+          legend.spacing = unit(1.0, 'cm'), 
+          legend.position = "top")
+}
+
+#### EO by Demographic ####
+bar_plot_fn(data5, Position, "Position") -> p1
+bar_plot_fn(data5, gender, "gender") -> p2
+bar_plot_fn(data5, Age, "Age") -> p3
+bar_plot_fn(data5, Education, "Education") -> p4
+
+grid.arrange(p1, p2, p3, p4)
+
+#### EO by control variables ####
+bar_plot_fn(data5, Firm_Age, "Firm Age") -> p5
+bar_plot_fn(data5, Firm_Size, "Firm Size") -> p6
+bar_plot_fn(data5, WE1, "Startup Exprience") -> p7
+bar_plot_fn(data5, WE2, "Venture Capital Exprience") -> p8
+bar_plot_fn(data5, WE3, "Industry Exprience") -> p9
+
+grid.arrange(p5, p6, p7, p8, p9)
+
+#### Social Capital ####
+bar_plot_sc <- function(.data, group_col, title) {
+  
+  .data %>% 
+    dplyr::group_by({{ group_col }}) %>% 
+    dplyr::summarise(Structural = mean(SD), 
+                     Cognitive = mean(SC), 
+                     Relational = mean(SR)) %>% 
+    tidyr::gather(key = "Factors", value = "Score", -{{ group_col }}) %>% 
+    mutate(Factors = factor(Factors, levels = c("Structural", "Cognitive", "Relational"))) %>% 
+    ggplot(aes(x = {{ group_col }}, y = Score, fill = Factors, label = round(Score, 2))) + 
+    geom_col(position = position_dodge2(padding = 0.1)) + 
+    geom_text(position = position_dodge(width = 0.9), vjust = -0.5, size = 6) + 
+    ylim(0, 5) + 
+    theme_classic() + 
+    ggtitle(paste0("Social Capital by ", title)) + 
+    theme(title = element_text(size = 16), 
+          axis.title.x = element_blank(), 
+          axis.text = element_text(size = 12), 
+          legend.text = element_text(size = 14),
+          legend.key = element_rect(size = 6, fill = "white", colour = "white"), 
+          legend.key.size = unit(1, "cm"),
+          legend.title = element_blank(), 
+          legend.spacing = unit(1.0, 'cm'), 
+          legend.position = "top")
+}
+
+#### SC by Demographic ####
+bar_plot_sc(data5, Position, "Position") -> p1
+bar_plot_sc(data5, gender, "gender") -> p2
+bar_plot_sc(data5, Age, "Age") -> p3
+bar_plot_sc(data5, Education, "Education") -> p4
+
+grid.arrange(p1, p2, p3, p4)
+
+#### SC by control variables ####
+bar_plot_sc(data5, Firm_Age, "Firm Age") -> p5
+bar_plot_sc(data5, Firm_Size, "Firm Size") -> p6
+bar_plot_sc(data5, WE1, "Startup Exprience") -> p7
+bar_plot_sc(data5, WE2, "Venture Capital Exprience") -> p8
+bar_plot_sc(data5, WE3, "Industry Exprience") -> p9
+
+grid.arrange(p5, p6, p7, p8, p9)
+
 
